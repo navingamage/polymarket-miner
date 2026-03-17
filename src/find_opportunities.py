@@ -98,13 +98,23 @@ Return valid JSON: [{{"question": "...", "sentiment": "BULLISH", "confidence": "
         return []
 
 def find_opportunities(markets, sentiment):
-    """Find trading opportunities based on sentiment vs price"""
+    """Find trading opportunities based on sentiment vs market prices"""
     opportunities = []
 
     for market, sent in zip(markets, sentiment):
         question = market['question']
-        price_yes = market.get('outcomePrices', ['0'])[0]
-        price_no = market.get('outcomePrices', ['0'])[1]
+
+        # Parse outcome prices (might be stringified JSON array)
+        outcome_prices = market.get('outcomePrices', ['0', '0'])
+
+        if isinstance(outcome_prices, str):
+            try:
+                outcome_prices = json.loads(outcome_prices)
+            except:
+                outcome_prices = ['0', '0']
+
+        price_yes = outcome_prices[0] if len(outcome_prices) > 0 else '0'
+        price_no = outcome_prices[1] if len(outcome_prices) > 1 else '0'
         volume = market.get('volumeNum', 0)
 
         # Simple logic: if price is low and sentiment is BULLISH, it's undervalued
