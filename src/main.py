@@ -1,9 +1,14 @@
 import requests
+import argparse
+import json
+import os
+from datetime import datetime
 
-def fetch_top_markets():
-    """Fetches the top 10 active markets from Polymarket."""
-    # Gamma API endpoint for active markets
-    url = "https://gamma-api.polymarket.com/markets?active=true&limit=10"
+def fetch_top_markets(limit=10, tag=None):
+    """Fetches active markets from Polymarket with optional tag filter."""
+    url = f"https://gamma-api.polymarket.com/markets?active=true&limit={limit}"
+    if tag:
+        url += f"&tag={tag}"
     
     try:
         response = requests.get(url)
@@ -14,9 +19,22 @@ def fetch_top_markets():
         return []
 
 if __name__ == "__main__":
-    print("Fetching top 10 active markets on Polymarket...")
-    markets = fetch_top_markets()
-    for idx, market in enumerate(markets, 1):
-        question = market.get('question', 'N/A')
-        volume = market.get('volume', '0')
-        print(f"{idx}. {question} (Volume: {volume})")
+    parser = argparse.ArgumentParser(description="Polymarket Miner")
+    parser.add_argument("--limit", type=int, default=10, help="Number of markets to fetch")
+    parser.add_argument("--tag", type=str, help="Tag filter (e.g., politics, crypto)")
+    parser.add_argument("--output", type=str, help="Output file path (JSONL)")
+    args = parser.parse_args()
+
+    markets = fetch_top_markets(limit=args.limit, tag=args.tag)
+    
+    if args.output:
+        # Append as JSONL
+        with open(args.output, "a") as f:
+            entry = {"timestamp": datetime.now().isoformat(), "markets": markets}
+            f.write(json.dumps(entry) + "\n")
+        print(f"Logged {len(markets)} markets to {args.output}")
+    else:
+        for idx, market in enumerate(markets, 1):
+            question = market.get('question', 'N/A')
+            volume = market.get('volume', '0')
+            print(f"{idx}. {question} (Volume: {volume})")
