@@ -2,6 +2,7 @@ import requests
 import json
 from datetime import datetime
 import os
+from src.rate_limiter import OPENROUTER_LIMITER
 
 # Configuration
 # Use the most recent market log file
@@ -87,6 +88,8 @@ def analyze_markets():
             "temperature": 0.1,  # Low temperature for more deterministic, factual answers
             "max_tokens": 5000  # Allow enough tokens for JSON output
         }
+
+        OPENROUTER_LIMITER.wait_if_needed()
 
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=30)
         response.raise_for_status()
