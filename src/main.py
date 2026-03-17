@@ -22,19 +22,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Polymarket Miner")
     parser.add_argument("--limit", type=int, default=10, help="Number of markets to fetch")
     parser.add_argument("--tag", type=str, help="Tag filter (e.g., politics, crypto)")
-    parser.add_argument("--output", type=str, help="Output file path (JSONL)")
     args = parser.parse_args()
 
     markets = fetch_top_markets(limit=args.limit, tag=args.tag)
-    
-    if args.output:
-        # Append as JSONL
-        with open(args.output, "a") as f:
+
+    # Create unique filename with date
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"data/markets-{date_str}.jsonl"
+
+    if markets:
+        with open(filename, "a") as f:
             entry = {"timestamp": datetime.now().isoformat(), "markets": markets}
             f.write(json.dumps(entry) + "\n")
-        print(f"Logged {len(markets)} markets to {args.output}")
+        print(f"✅ Logged {len(markets)} markets to {filename}")
     else:
-        for idx, market in enumerate(markets, 1):
-            question = market.get('question', 'N/A')
-            volume = market.get('volume', '0')
-            print(f"{idx}. {question} (Volume: {volume})")
+        print("⚠️  No markets fetched or error occurred.")
+        print(f"Check the file: {filename}")
