@@ -4,13 +4,16 @@ from datetime import datetime
 import os
 
 # Configuration
-MARKETS_FILE = "data/markets.jsonl"
+# Use the most recent market log file
+import os
+import glob
+market_files = glob.glob("data/markets-*.jsonl")
+MARKETS_FILE = sorted(market_files)[-1] if market_files else "data/markets.jsonl"
 OUTPUT_DIR = "data"
-LINES_TO_ANALYZE = 10  # Analyze latest N markets
+LINES_TO_ANALYZE = 5  # Reduced from 10 for better API compliance
 
 # OpenRouter Configuration
-# Using the generic GLM-4.7-Flash model ID
-MODEL_ID = "openrouter/z-ai/glm-4.7-flash"
+MODEL_ID = "z-ai/glm-4.7-flash"
 API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
 def analyze_markets():
@@ -81,16 +84,40 @@ def analyze_markets():
                 {"role": "system", "content": "You are a trading sentiment analyzer. Output only valid JSON."},
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.1  # Low temperature for more deterministic, factual answers
+            "temperature": 0.1,  # Low temperature for more deterministic, factual answers
+            "max_tokens": 5000  # Allow enough tokens for JSON output
         }
 
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=30)
         response.raise_for_status()
         result = response.json()
 
         # Parse the response content
         analysis_text = result['choices'][0]['message']['content']
-        analysis_data = json.loads(analysis_text)
+
+        # Debug: print response if JSON parsing fails
+        if not analysis_text or analysis_text.strip() == "":
+            print(f"❌ Empty response from API")
+            print(f"Response: {result}")
+            return
+
+        # Strip markdown code blocks if present
+        analysis_text = analysis_text.strip()
+        if analysis_text.startswith("```json"):
+            analysis_text = analysis_text[7:]  # Remove ```json
+        elif analysis_text.startswith("```"):
+            analysis_text = analysis_text[3:]  # Remove ```
+        if analysis_text.endswith("```"):
+            analysis_text = analysis_text[:-3]  # Remove trailing ```
+        analysis_text = analysis_text.strip()
+
+        try:
+            analysis_data = json.loads(analysis_text)
+        except json.JSONDecodeError as e:
+            print(f"❌ Failed to parse JSON response")
+            print(f"Response text (first 500 chars): {analysis_text[:500]}")
+            print(f"JSON error: {e}")
+            return
 
         # Write analysis to output file
         with open(output_file, "a") as f:

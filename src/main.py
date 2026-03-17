@@ -6,10 +6,10 @@ from datetime import datetime
 
 def fetch_top_markets(limit=10, tag=None):
     """Fetches active markets from Polymarket with optional tag filter."""
-    url = f"https://gamma-api.polymarket.com/markets?active=true&limit={limit}"
+    url = f"https://gamma-api.polymarket.com/markets?active=true&closed=false&limit={limit}"
     if tag:
         url += f"&tag={tag}"
-    
+
     try:
         response = requests.get(url)
         response.raise_for_status()

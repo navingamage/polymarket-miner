@@ -1,5 +1,33 @@
-venv/
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Test files
+test_*.py
+test_*.sh
+debug_*.py
+
+# Data files (keep only analysis output, clear data periodically)
+data/*.jsonl
+!data/.gitkeep
+
+# Results
+*.png
+*.jpg
+data/sentiment_*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
-.env
-data/
+*.log
