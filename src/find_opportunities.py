@@ -84,12 +84,31 @@ Return valid JSON: [{{"question": "...", "sentiment": "BULLISH", "confidence": "
         response.raise_for_status()
         result = response.json()
 
-        # Clean markdown
+        # Get raw response
         text = result['choices'][0]['message']['content']
+
+        # Debug: show response if parsing fails
+        print(f"Raw response (first 300 chars): {text[:300]}...")
+
+        # Clean markdown and extract JSON
         text = text.strip()
+
+        # Remove markdown code blocks
         if text.startswith("```json"): text = text[7:]
         elif text.startswith("```"): text = text[3:]
         if text.endswith("```"): text = text[:-3]
+        text = text.strip()
+
+        # Try to extract just the JSON array
+        # Remove any text before the first '[' and after the last ']'
+        json_start = text.find('[')
+        json_end = text.rfind(']')
+
+        if json_start != -1 and json_end != -1:
+            text = text[json_start:json_end + 1]
+
+        print(f"Cleaned text (first 300 chars): {text[:300]}...")
+
         return json.loads(text)
     except Exception as e:
         print(f"❌ Analysis error: {e}")
