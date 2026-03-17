@@ -52,20 +52,21 @@ def analyze_markets():
 
     market_questions = "\n\n".join(market_questions_list)
 
-    prompt = f"""
-    Act as a professional trading analyst. Analyze the following Polymarket questions.
-    For each question, determine if the market outcome is:
-    - BULLISH (market expects YES to happen)
-    - BEARISH (market expects NO to happen)
-    - NEUTRAL (uncertain or event-based)
-    
-    Respond ONLY as a valid JSON list. Do not add extra text.
-    
-    Format: [{"question": "...", "sentiment": "BULLISH", "confidence": "high"}]
-    
-    Questions to analyze:
-    {market_questions}
-    """
+    prompt_lines = [
+        "Act as a professional trading analyst. Analyze the following Polymarket questions.",
+        "For each question, determine if the market outcome is:",
+        "- BULLISH (market expects YES to happen)",
+        "- BEARISH (market expects NO to happen)",
+        "- NEUTRAL (uncertain or event-based)",
+        "",
+        "Respond ONLY as a valid JSON list. Do not add extra text.",
+        "",
+        "Format: [{'question': '...', 'sentiment': 'BULLISH', 'confidence': 'high'}]",
+        "",
+        "Questions to analyze:",
+        market_questions
+    ]
+    prompt = "\n".join(prompt_lines)
 
     try:
         # Call OpenRouter API
