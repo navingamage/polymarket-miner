@@ -26,18 +26,26 @@ def analyze_markets():
         with open(MARKETS_FILE, "r") as f:
             # Read the last N entries
             lines = f.readlines()[-LINES_TO_ANALYZE:]
-            entries = [json.loads(line) for line in lines]
+            # Parse the entries (each entry is a timestamp + markets list)
+            entries_data = [json.loads(line) for line in lines]
+
+        # Extract the markets list from the first entry
+        if not entries_data:
+            print(f"❌ No data found in {MARKETS_FILE}")
+            return
+
+        markets_list = entries_data[0].get('markets', [])
+
     except FileNotFoundError:
         print(f"❌ No market data found in {MARKETS_FILE}")
         return
 
-    print(f"📊 Analyzing {len(entries)} markets from {MARKETS_FILE}...")
+    print(f"📊 Analyzing {len(markets_list)} markets from {MARKETS_FILE}...")
 
     # Prepare batch for analysis
-    # We send all markets in one prompt to save on API calls (efficient)
     market_questions = "\n\n".join([
-        f"{i+1}. {entry['question']}"
-        for i, entry in enumerate(entries)
+        f"{i+1}. {market.get('question', 'N/A')}"
+        for i, market in enumerate(markets_list)
     ])
 
     prompt = f"""
