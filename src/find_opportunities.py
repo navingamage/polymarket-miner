@@ -74,6 +74,13 @@ Return valid JSON: [{{"question": "...", "sentiment": "BULLISH", "confidence": "
             json=payload,
             timeout=30
         )
+
+        print(f"📥 Received response: {response.status_code}")
+
+        if response.status_code != 200:
+            print(f"❌ Error: {response.status_code}")
+            print(f"Response: {response.text[:500]}")
+
         response.raise_for_status()
         result = response.json()
 
@@ -86,6 +93,8 @@ Return valid JSON: [{{"question": "...", "sentiment": "BULLISH", "confidence": "
         return json.loads(text)
     except Exception as e:
         print(f"❌ Analysis error: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 def find_opportunities(markets, sentiment):
