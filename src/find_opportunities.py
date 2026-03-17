@@ -15,7 +15,24 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.rate_limiter import POLYMARKET_LIMITER, OPENROUTER_LIMITER
 
-API_KEY = "sk-or-v1-01b916..."  # Your API key
+API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+
+def check_api_key():
+    """Check if API key is properly configured"""
+    if not API_KEY:
+        print("❌ ERROR: OPENROUTER_API_KEY not found in environment!")
+        print("Please set it: export OPENROUTER_API_KEY='your-key-here'")
+        exit(1)
+
+    if len(API_KEY) < 20:
+        print("❌ ERROR: API key appears too short")
+        print(f"Length: {len(API_KEY)}")
+        print("Please check your API key")
+        exit(1)
+
+    print(f"✅ API Key: {API_KEY[:15]}... (length: {len(API_KEY)})")
+    return API_KEY
+
 MODEL_ID = "z-ai/glm-4.7-flash"
 MARKETS_FILE = "data/markets-2026-03-17.jsonl"
 
@@ -105,6 +122,9 @@ def find_opportunities(markets, sentiment):
 
 def main():
     """Main execution"""
+    # Check API key first
+    check_api_key()
+
     print("🔍 Finding Trading Opportunities...\n")
 
     # Load markets
