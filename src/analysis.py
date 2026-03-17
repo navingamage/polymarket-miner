@@ -43,10 +43,14 @@ def analyze_markets():
     print(f"📊 Analyzing {len(markets_list)} markets from {MARKETS_FILE}...")
 
     # Prepare batch for analysis
-    market_questions = "\n\n".join([
-        f"{i+1}. {market.get('question', 'N/A')}"
-        for i, market in enumerate(markets_list)
-    ])
+    market_questions_list = []
+    for i, market in enumerate(markets_list):
+        question = market.get('question', 'N/A')
+        # Escape any curly braces to prevent formatting errors
+        question = question.replace('{', '{{').replace('}', '}}')
+        market_questions_list.append(f"{i+1}. {question}")
+
+    market_questions = "\n\n".join(market_questions_list)
 
     prompt = f"""
     Act as a professional trading analyst. Analyze the following Polymarket questions.
