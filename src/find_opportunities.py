@@ -30,7 +30,9 @@ def check_api_key():
         print("Please check your API key")
         exit(1)
 
-    print(f"✅ API Key: {API_KEY[:15]}... (length: {len(API_KEY)})")
+    # Mask the key for security
+    masked_key = API_KEY[:15] + "..." + API_KEY[-4:]
+    print(f"✅ API Key: {masked_key} (length: {len(API_KEY)})")
     return API_KEY
 
 MODEL_ID = "z-ai/glm-4.7-flash"
